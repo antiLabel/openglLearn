@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == '__main__':
     fmt = QSurfaceFormat()
-    fmt.setProfile(QSurfaceFormat.CompatibilityProfile)
+    fmt.setProfile(QSurfaceFormat.CoreProfile)
     fmt.setVersion(3, 3)
     fmt.setSwapBehavior(QSurfaceFormat.DoubleBuffer)
     fmt.setSwapInterval(1)
