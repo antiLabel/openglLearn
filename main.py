@@ -26,7 +26,7 @@ class VideoWidget(QOpenGLWidget):
             opengl_init_params={'get_proc_address': MpvGlGetProcAddressFn(_get_proc)}
         )
         print("mpv render context initialized.")
-        self.mpv_render_context.update_callback = self.update
+        #self.mpv_render_context.update_callback = self.update
 
         self.logger = QOpenGLDebugLogger(self)
         print("OpenGL debug logger created.")
