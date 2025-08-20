@@ -6,6 +6,7 @@ from PySide6.QtOpenGLWidgets import QOpenGLWidget
 # ================== 新增导入 ==================
 from PySide6.QtGui import QSurfaceFormat, QOpenGLContext
 from PySide6.QtOpenGL import QOpenGLDebugLogger
+from PySide6.QtCore import Qt, QMetaObject
 # ============================================
 
 class VideoWidget(QOpenGLWidget):
@@ -21,6 +22,7 @@ class VideoWidget(QOpenGLWidget):
             glctx = QOpenGLContext.currentContext()
             address = int(glctx.getProcAddress(name.decode('utf-8'))) if glctx else 0
             return address
+        
         self.mpv_render_context = MpvRenderContext(
             self.mpv, 'opengl',
             opengl_init_params={'get_proc_address': MpvGlGetProcAddressFn(_get_proc)}
@@ -44,7 +46,9 @@ class VideoWidget(QOpenGLWidget):
 
         self.logger.startLogging(QOpenGLDebugLogger.AsynchronousLogging)
         print("OpenGL debug logger started.")
-        self.mpv_render_context.update_callback = self.update
+        self.mpv_render_context.set_update_callback(
+             lambda: QMetaObject.invokeMethod(self, "update", Qt.QueuedConnection)
+        )
          
     def paintGL(self):
         if not self.mpv_render_context:
@@ -55,9 +59,10 @@ class VideoWidget(QOpenGLWidget):
 
         self.mpv_render_context.render(
             opengl_fbo={'fbo': fbo_id, 'w': w, 'h': h},
-            flip_y=True
+            flip_y=True 
         )
-        
+        self.mpv_render_context.report_swap()
+
     def closeEvent(self, e):
         if self.mpv_render_context:
             self.mpv_render_context.free()
@@ -81,7 +86,7 @@ class MainWindow(QMainWindow):
 
 if __name__ == '__main__':
     fmt = QSurfaceFormat()
-    fmt.setProfile(QSurfaceFormat.CompatibilityProfile)
+    fmt.setProfile(QSurfaceFormat.CoreProfile)
     fmt.setVersion(3, 3)
     fmt.setSwapBehavior(QSurfaceFormat.DoubleBuffer)
     fmt.setSwapInterval(1)
